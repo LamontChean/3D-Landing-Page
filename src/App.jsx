@@ -125,8 +125,8 @@ function FloatingElements() {
 }
 
 function App() {
-  const INSTAGRAM_URL = "https://www.instagram.com/your_username"
-  const WHATSAPP_URL = "https://wa.me/60123456789"
+  const INSTAGRAM_URL = "https://www.instagram.com/tag_me.co?igsh=MWYxdWNneTlrazI0eg=="
+  const WHATSAPP_URL = "https://wa.me/60183715153"
 
   // Typing animation for hero
   const [typedText, setTypedText] = useState('')
