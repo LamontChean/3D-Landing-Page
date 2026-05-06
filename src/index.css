@@ -69,3 +69,81 @@ ul {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 4px 40px rgba(139, 92, 246, 0.7), 0 0 60px rgba(139, 92, 246, 0.3); }
+}
+
+/* Scroll Reveal Animations */
+.reveal {
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-up {
+  transform: translateY(60px);
+}
+
+.reveal-down {
+  transform: translateY(-60px);
+}
+
+.reveal-left {
+  transform: translateX(-60px);
+}
+
+.reveal-right {
+  transform: translateX(60px);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* Typing cursor */
+.typing-text .cursor {
+  animation: blink 1s infinite;
+  font-weight: 100;
+  color: var(--accent);
+}
+
+/* Pulse button */
+.pulse-btn {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+.pulse-btn:hover {
+  animation: none;
+}
+
+/* Floating parallax elements */
+.floating-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.float-item {
+  position: absolute;
+  font-size: 4rem;
+  opacity: 0.12;
+  transition: transform 0.3s ease-out;
+  filter: blur(1px);
+}
+
+.float-1 { top: 12%; left: 8%; animation: float 6s ease-in-out infinite; }
+.float-2 { top: 60%; right: 8%; animation: floatReverse 7s ease-in-out infinite; }
+.float-3 { top: 25%; right: 15%; animation: float 8s ease-in-out infinite 1s; }
+.float-4 { bottom: 15%; left: 12%; animation: floatReverse 6.5s ease-in-out infinite 0.5s; }
+.float-5 { top: 45%; left: 25%; animation: float 7.5s ease-in-out infinite 2s; }

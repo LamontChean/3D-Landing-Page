@@ -142,28 +142,7 @@
   overflow: hidden;
 }
 
-/* 3D Floating Elements */
-.hero::before {
-  content: '🖨️';
-  position: absolute;
-  font-size: 8rem;
-  top: 15%;
-  left: 8%;
-  animation: float 6s ease-in-out infinite;
-  opacity: 0.15;
-  filter: blur(2px);
-}
-
-.hero::after {
-  content: '🎨';
-  position: absolute;
-  font-size: 6rem;
-  bottom: 20%;
-  right: 10%;
-  animation: floatReverse 7s ease-in-out infinite;
-  opacity: 0.15;
-  filter: blur(2px);
-}
+/* 3D Floating Elements handled by React component */
 
 .hero-bg-element {
   position: absolute;

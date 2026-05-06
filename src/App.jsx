@@ -1,9 +1,149 @@
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+// Hook for Intersection Observer (lazy loading / scroll reveal)
+function useInView(options = {}) {
+  const ref = useRef(null)
+  const [isInView, setIsInView] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true)
+        observer.unobserve(entry.target)
+      }
+    }, { threshold: 0.1, ...options })
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, isInView]
+}
+
+// Animated counter component
+function AnimatedCounter({ target, duration = 2000 }) {
+  const [count, setCount] = useState(0)
+  const [ref, isInView] = useInView()
+
+  useEffect(() => {
+    if (!isInView) return
+    const numericTarget = parseInt(target.replace(/[^0-9.]/g, ''))
+    if (isNaN(numericTarget)) { setCount(target); return }
+
+    let start = 0
+    const increment = numericTarget / (duration / 16)
+    const timer = setInterval(() => {
+      start += increment
+      if (start >= numericTarget) {
+        clearInterval(timer)
+        setCount(numericTarget)
+      } else {
+        setCount(Math.floor(start))
+      }
+    }, 16)
+    return () => clearInterval(timer)
+  }, [isInView, target, duration])
+
+  return <span ref={ref}>{typeof count === 'number' ? count : target}</span>
+}
+
+// Reveal wrapper component
+function Reveal({ children, delay = 0, direction = 'up' }) {
+  const [ref, isInView] = useInView()
+  const directionClass = `reveal-${direction}`
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${directionClass} ${isInView ? 'revealed' : ''}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Tilt card component
+function TiltCard({ children, className }) {
+  const cardRef = useRef(null)
+
+  const handleMouseMove = (e) => {
+    const card = cardRef.current
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = (y - centerY) / 20
+    const rotateY = (centerX - x) / 20
+
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`
+  }
+
+  const handleMouseLeave = () => {
+    cardRef.current.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ transition: 'transform 0.3s ease' }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Parallax floating elements
+function FloatingElements() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      })
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
+  return (
+    <div className="floating-elements">
+      <span className="float-item float-1" style={{ transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)` }}>🖨️</span>
+      <span className="float-item float-2" style={{ transform: `translate(${mousePos.x * -0.3}px, ${mousePos.y * -0.3}px)` }}>🎨</span>
+      <span className="float-item float-3" style={{ transform: `translate(${mousePos.x * 0.7}px, ${mousePos.y * 0.4}px)` }}>🎮</span>
+      <span className="float-item float-4" style={{ transform: `translate(${mousePos.x * -0.4}px, ${mousePos.y * 0.6}px)` }}>🦸</span>
+      <span className="float-item float-5" style={{ transform: `translate(${mousePos.x * 0.6}px, ${mousePos.y * -0.5}px)` }}>⚡</span>
+    </div>
+  )
+}
+
 function App() {
-  // 替换成你的实际链接
   const INSTAGRAM_URL = "https://www.instagram.com/your_username"
-  const WHATSAPP_URL = "https://wa.me/60123456789" // 替换成你的 WhatsApp 号码
+  const WHATSAPP_URL = "https://wa.me/60123456789"
+
+  // Typing animation for hero
+  const [typedText, setTypedText] = useState('')
+  const fullText = '3D Printing for Fun & Creativity'
+
+  useEffect(() => {
+    let i = 0
+    const timer = setInterval(() => {
+      if (i <= fullText.length) {
+        setTypedText(fullText.slice(0, i))
+        i++
+      } else {
+        clearInterval(timer)
+      }
+    }, 50)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <>
@@ -32,113 +172,112 @@ function App() {
 
       {/* Hero Section */}
       <section className="hero">
+        <FloatingElements />
         <div className="hero-content">
-          <div className="hero-badge">
-            🔥 <span>Next Level</span> — Where Imagination Becomes Reality
-          </div>
-          <h1>3D Printing for Fun & Creativity</h1>
-          <p>
-            Custom 3D printed toys, figurines, gadgets, and more! 
-            From concept to creation — we bring your imagination to life.
-          </p>
-          <div className="hero-buttons">
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-              💬 WhatsApp Us
-            </a>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
-              📸 See Our Work
-            </a>
-          </div>
+          <Reveal>
+            <div className="hero-badge">
+              🔥 <span>Next Level</span> — Where Imagination Becomes Reality
+            </div>
+          </Reveal>
+          <Reveal delay={200}>
+            <h1 className="typing-text">
+              {typedText}
+              <span className="cursor">|</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={400}>
+            <p>
+              Custom 3D printed toys, figurines, gadgets, and more!
+              From concept to creation — we bring your imagination to life.
+            </p>
+          </Reveal>
+          <Reveal delay={600}>
+            <div className="hero-buttons">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary pulse-btn">
+                💬 WhatsApp Us
+              </a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                📸 See Our Work
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Services Section */}
       <section className="features" id="services">
         <div className="section-container">
-          <div className="section-header">
-            <h2>What We Print</h2>
-            <p>From fun collectibles to functional gadgets — we do it all!</p>
-          </div>
+          <Reveal>
+            <div className="section-header">
+              <h2>What We Print</h2>
+              <p>From fun collectibles to functional gadgets — we do it all!</p>
+            </div>
+          </Reveal>
           <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">🎮</div>
-              <h3>Gaming Accessories</h3>
-              <p>Custom controller stands, console mounts, keycaps, and gaming figurines.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🦸</div>
-              <h3>Figurines & Models</h3>
-              <p>Anime characters, superheroes, miniatures for tabletop games and display.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🎁</div>
-              <h3>Custom Gifts</h3>
-              <p>Personalized name plates, photo frames, phone stands, and unique presents.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🔧</div>
-              <h3>Functional Parts</h3>
-              <p>Replacement parts, organizers, hooks, mounts, and everyday solutions.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🏠</div>
-              <h3>Home Decor</h3>
-              <p>Vases, lamp shades, wall art, planters, and decorative pieces.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">💡</div>
-              <h3>Custom Design</h3>
-              <p>Got an idea? We'll design and print it for you. Just send us a message!</p>
-            </div>
+            {[
+              { icon: '🎮', title: 'Gaming Accessories', desc: 'Custom controller stands, console mounts, keycaps, and gaming figurines.' },
+              { icon: '🦸', title: 'Figurines & Models', desc: 'Anime characters, superheroes, miniatures for tabletop games and display.' },
+              { icon: '🎁', title: 'Custom Gifts', desc: 'Personalized name plates, photo frames, phone stands, and unique presents.' },
+              { icon: '🔧', title: 'Functional Parts', desc: 'Replacement parts, organizers, hooks, mounts, and everyday solutions.' },
+              { icon: '🏠', title: 'Home Decor', desc: 'Vases, lamp shades, wall art, planters, and decorative pieces.' },
+              { icon: '💡', title: 'Custom Design', desc: "Got an idea? We'll design and print it for you. Just send us a message!" },
+            ].map((item, i) => (
+              <Reveal key={i} delay={i * 100}>
+                <TiltCard className="feature-card">
+                  <div className="feature-icon">{item.icon}</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                </TiltCard>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Gallery / Process Section */}
+      {/* Stats Section */}
       <section className="stats" id="gallery">
         <div className="stats-grid">
-          <div className="stat-item">
-            <div className="stat-number">500+</div>
-            <div className="stat-label">Items Printed</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">200+</div>
-            <div className="stat-label">Happy Customers</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">50+</div>
-            <div className="stat-label">Custom Designs</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">⭐ 5.0</div>
-            <div className="stat-label">Customer Rating</div>
-          </div>
+          {[
+            { number: '500', suffix: '+', label: 'Items Printed' },
+            { number: '200', suffix: '+', label: 'Happy Customers' },
+            { number: '50', suffix: '+', label: 'Custom Designs' },
+            { number: '5', suffix: '.0 ⭐', label: 'Customer Rating' },
+          ].map((stat, i) => (
+            <Reveal key={i} delay={i * 150}>
+              <div className="stat-item">
+                <div className="stat-number">
+                  <AnimatedCounter target={stat.number} />{stat.suffix}
+                </div>
+                <div className="stat-label">{stat.label}</div>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
       {/* How It Works */}
       <section className="features" id="about">
         <div className="section-container">
-          <div className="section-header">
-            <h2>How It Works</h2>
-            <p>Getting your custom 3D print is easy as 1-2-3!</p>
-          </div>
+          <Reveal>
+            <div className="section-header">
+              <h2>How It Works</h2>
+              <p>Getting your custom 3D print is easy as 1-2-3!</p>
+            </div>
+          </Reveal>
           <div className="features-grid steps-grid">
-            <div className="feature-card step-card">
-              <div className="step-number">1</div>
-              <h3>Send Your Idea</h3>
-              <p>Message us on WhatsApp or Instagram with your idea, reference image, or 3D file.</p>
-            </div>
-            <div className="feature-card step-card">
-              <div className="step-number">2</div>
-              <h3>We Design & Quote</h3>
-              <p>We'll prepare the design, choose the best material, and give you a price quote.</p>
-            </div>
-            <div className="feature-card step-card">
-              <div className="step-number">3</div>
-              <h3>Print & Deliver</h3>
-              <p>Once confirmed, we print and deliver your item. Usually ready in 2-5 days!</p>
-            </div>
+            {[
+              { num: 1, title: 'Send Your Idea', desc: 'Message us on WhatsApp or Instagram with your idea, reference image, or 3D file.' },
+              { num: 2, title: 'We Design & Quote', desc: "We'll prepare the design, choose the best material, and give you a price quote." },
+              { num: 3, title: 'Print & Deliver', desc: 'Once confirmed, we print and deliver your item. Usually ready in 2-5 days!' },
+            ].map((step, i) => (
+              <Reveal key={i} delay={i * 200}>
+                <div className="feature-card step-card">
+                  <div className="step-number">{step.num}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.desc}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -146,62 +285,52 @@ function App() {
       {/* Testimonials */}
       <section className="testimonials">
         <div className="section-container">
-          <div className="section-header">
-            <h2>What Customers Say</h2>
-            <p>Real feedback from our happy customers</p>
-          </div>
+          <Reveal>
+            <div className="section-header">
+              <h2>What Customers Say</h2>
+              <p>Real feedback from our happy customers</p>
+            </div>
+          </Reveal>
           <div className="testimonials-grid">
-            <div className="testimonial-card">
-              <div className="testimonial-stars">★★★★★</div>
-              <blockquote>"Ordered a custom anime figurine and it turned out amazing! Super detailed and fast delivery."</blockquote>
-              <div className="testimonial-author">
-                <div className="author-avatar">AH</div>
-                <div className="author-info">
-                  <h4>Ahmad</h4>
-                  <p>Kuala Lumpur</p>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-card">
-              <div className="testimonial-stars">★★★★★</div>
-              <blockquote>"Got a personalized name plate as a birthday gift. My friend loved it! Will order again."</blockquote>
-              <div className="testimonial-author">
-                <div className="author-avatar">SL</div>
-                <div className="author-info">
-                  <h4>Sarah L.</h4>
-                  <p>Penang</p>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-card">
-              <div className="testimonial-stars">★★★★★</div>
-              <blockquote>"Needed a replacement part for my gadget. They designed and printed it perfectly. Saved me so much money!"</blockquote>
-              <div className="testimonial-author">
-                <div className="author-avatar">RK</div>
-                <div className="author-info">
-                  <h4>Raj K.</h4>
-                  <p>Johor Bahru</p>
-                </div>
-              </div>
-            </div>
+            {[
+              { quote: '"Ordered a custom anime figurine and it turned out amazing! Super detailed and fast delivery."', name: 'Ahmad', location: 'Kuala Lumpur', initials: 'AH' },
+              { quote: '"Got a personalized name plate as a birthday gift. My friend loved it! Will order again."', name: 'Sarah L.', location: 'Penang', initials: 'SL' },
+              { quote: '"Needed a replacement part for my gadget. They designed and printed it perfectly. Saved me so much money!"', name: 'Raj K.', location: 'Johor Bahru', initials: 'RK' },
+            ].map((t, i) => (
+              <Reveal key={i} delay={i * 150}>
+                <TiltCard className="testimonial-card">
+                  <div className="testimonial-stars">★★★★★</div>
+                  <blockquote>{t.quote}</blockquote>
+                  <div className="testimonial-author">
+                    <div className="author-avatar">{t.initials}</div>
+                    <div className="author-info">
+                      <h4>{t.name}</h4>
+                      <p>{t.location}</p>
+                    </div>
+                  </div>
+                </TiltCard>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="cta" id="contact">
-        <div className="cta-content">
-          <h2>Ready to Print Something Awesome?</h2>
-          <p>Send us a message and let's create something cool together!</p>
-          <div className="cta-buttons">
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-              💬 Chat on WhatsApp
-            </a>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
-              📸 Follow on Instagram
-            </a>
+        <Reveal>
+          <div className="cta-content">
+            <h2>Ready to Print Something Awesome?</h2>
+            <p>Send us a message and let's create something cool together!</p>
+            <div className="cta-buttons">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary pulse-btn">
+                💬 Chat on WhatsApp
+              </a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                📸 Follow on Instagram
+              </a>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Footer */}
