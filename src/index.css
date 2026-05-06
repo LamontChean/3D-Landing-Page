@@ -107,6 +107,21 @@ ul {
   transform: translate(0, 0);
 }
 
+/* Ensure reveal works inside grid */
+.features-grid > .reveal,
+.testimonials-grid > .reveal,
+.stats-grid > .reveal {
+  display: flex;
+  height: 100%;
+}
+
+.features-grid > .reveal > *,
+.testimonials-grid > .reveal > *,
+.stats-grid > .reveal > * {
+  width: 100%;
+  flex: 1;
+}
+
 /* Typing cursor */
 .typing-text .cursor {
   animation: blink 1s infinite;

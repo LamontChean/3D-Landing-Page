@@ -386,6 +386,8 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
+  aspect-ratio: auto;
+  min-height: 0;
 }
 
 .stat-item:hover {
@@ -429,6 +431,8 @@
   border-radius: 1.5rem;
   transition: all 0.4s ease;
   backdrop-filter: blur(10px);
+  height: auto;
+  min-height: 0;
 }
 
 .testimonial-card:hover {
@@ -664,19 +668,29 @@
     gap: 1rem;
   }
   .stat-item {
-    padding: 1.25rem;
+    padding: 1.25rem 1rem;
   }
   .stat-number {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    white-space: nowrap;
   }
   .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .testimonial-card {
     padding: 1.5rem;
   }
   .testimonial-card blockquote {
     font-size: 0.9rem;
+  }
+  .testimonials-grid {
+    gap: 1.25rem;
+  }
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 0.85rem;
   }
   .footer-content {
     grid-template-columns: 1fr;
