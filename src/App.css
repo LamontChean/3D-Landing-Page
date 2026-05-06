@@ -661,6 +661,22 @@
   }
   .stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .stat-item {
+    padding: 1.25rem;
+  }
+  .stat-number {
+    font-size: 2rem;
+  }
+  .stat-label {
+    font-size: 0.85rem;
+  }
+  .testimonial-card {
+    padding: 1.5rem;
+  }
+  .testimonial-card blockquote {
+    font-size: 0.9rem;
   }
   .footer-content {
     grid-template-columns: 1fr;
@@ -677,5 +693,27 @@
   }
   .footer-socials {
     flex-direction: column;
+  }
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
+    max-width: 280px;
+  }
+  .features,
+  .testimonials {
+    padding: 4rem 1.25rem;
+  }
+  .stats {
+    padding: 3rem 1rem;
+  }
+  .cta {
+    padding: 4rem 1.25rem;
+  }
+  .feature-card {
+    padding: 1.75rem;
   }
 }
